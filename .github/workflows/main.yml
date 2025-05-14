@@ -37,16 +37,16 @@ jobs:
         export KBUILD_BUILD_USER=openai
         export KBUILD_BUILD_HOST=github-actions
         export PATH=$(pwd)/clang/bin:$PATH
-
-        # Set cross compilation variables
+        export HOST_PATH=$PATH
+        export PATH=/usr/bin:$PATH
         export CROSS_COMPILE=aarch64-linux-gnu-
         export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
         export CC=clang
         export CLANG_TRIPLE=aarch64-linux-gnu-
-
+        export LLVM=1
         make O=out lancelot_defconfig
         echo "CONFIG_KSU=y" >> out/.config
-
+        export PATH=$HOST_PATH
         make -j$(nproc) O=out
 
     - name: Clone AnyKernel3
