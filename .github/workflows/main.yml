@@ -28,20 +28,17 @@ jobs:
         git clone --depth=1 https://github.com/KernelSU-Next/KernelSU-Next.git KernelSU
         bash KernelSU/kernel/setup.sh
 
-    - name: Setup Build Variables
+    - name: Compile the Kernel
       run: |
         export ARCH=arm64
         export SUBARCH=arm64
-        export KBUILD_BUILD_USER=adrenaline
+        export KBUILD_BUILD_USER=openai
         export KBUILD_BUILD_HOST=github-actions
-        export PATH=$CLANG_PATH:$PATH
-        echo "Patching KernelSU Next"
+        export PATH=$(pwd)/clang/bin:$PATH
 
-    - name: Start Kernel Compilation
-      run: |
         make O=out lancelot_defconfig
-        # Enable KSU config forcibly
         echo "CONFIG_KSU=y" >> out/.config
+
         make -j$(nproc) O=out \
           CC=clang \
           CROSS_COMPILE=aarch64-linux-gnu- \
@@ -57,7 +54,7 @@ jobs:
         cd AnyKernel3
         zip -r9 ../Lancelot-Kernel-KSU-Next.zip *
 
-    - name: Upload Final Flashable ZIP
+    - name: Upload Flashable Kernel
       uses: actions/upload-artifact@v4
       with:
         name: Lancelot-Kernel-KSU-Next
