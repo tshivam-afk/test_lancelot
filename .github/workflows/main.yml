@@ -1,0 +1,53 @@
+name: Build KernelSU Next Kernel for Lancelot
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout Kernel Source
+      uses: actions/checkout@v3
+
+    - name: Set up Environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y bc bison flex libssl-dev libelf-dev build-essential clang
+
+    - name: Clone Toolchain (Neutron Clang)
+      run: |
+        git clone --depth=1 https://github.com/Neutron-Toolchains/clang.git clang
+        echo "CLANG_PATH=$(pwd)/clang/bin" >> $GITHUB_ENV
+
+    - name: Clone KernelSU Next and Integrate
+      run: |
+        git clone --depth=1 https://github.com/KernelSU-Next/KernelSU-Next.git KernelSU-Next
+        bash KernelSU-Next/kernel/setup.sh
+
+    - name: Compile Kernel
+      run: |
+        export ARCH=arm64
+        export SUBARCH=arm64
+        export KBUILD_BUILD_USER=adrenaline
+        export KBUILD_BUILD_HOST=github
+        export PATH=$CLANG_PATH:$PATH
+        make O=out lancelot_defconfig
+        make -j$(nproc) O=out \
+          CC=clang \
+          CROSS_COMPILE=aarch64-linux-gnu- \
+          CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+
+    - name: Package Kernel with AnyKernel3
+      run: |
+        git clone --depth=1 https://github.com/osm0sis/AnyKernel3.git AnyKernel3
+        cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3/
+        cd AnyKernel3
+        zip -r9 ../Lancelot-KSU-Next-Kernel.zip *
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Lancelot-KSU-Next-Kernel
+        path: Lancelot-KSU-Next-Kernel.zip
