@@ -18,9 +18,8 @@ jobs:
         libelf-dev build-essential git wget curl \
         python3 python3-pip ca-certificates unzip \
         gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi \
-        binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi \
-        libssp-dev
-
+        binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi 
+      
     - name: Clone Proton Clang 
       run: |
         git clone --depth=1 https://github.com/kdrag0n/proton-clang.git clang
