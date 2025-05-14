@@ -12,19 +12,19 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up Dependencies
-    run: |
-     sudo apt-get update
-     sudo apt-get install -y bc bison flex libssl-dev \
-      libelf-dev build-essential git wget curl \
-      python3 python3-pip ca-certificates unzip \
-      gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi \
-      binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi \
-      libssp-dev
+      run: | 
+        sudo apt-get update
+        sudo apt-get install -y bc bison flex libssl-dev \
+        libelf-dev build-essential git wget curl \
+        python3 python3-pip ca-certificates unzip \
+        gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi \
+        binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi \
+        libssp-dev
 
- - name: Clone Proton Clang
-    run: |
-    git clone --depth=1 https://github.com/kdrag0n/proton-clang.git clang
-    echo "CLANG_PATH=$(pwd)/clang/bin" >> $GITHUB_ENV
+    - name: Clone Proton Clang 
+      run: |
+        git clone --depth=1 https://github.com/kdrag0n/proton-clang.git clang
+        echo "CLANG_PATH=$(pwd)/clang/bin" >> $GITHUB_ENV
 
     - name: Add KernelSU Next
       run: |
