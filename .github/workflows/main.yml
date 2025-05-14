@@ -6,48 +6,59 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-
     - name: Checkout Kernel Source
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Set up Environment
+    - name: Set up Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y bc bison flex libssl-dev libelf-dev build-essential clang
+        sudo apt-get install -y bc bison flex libssl-dev \
+          libelf-dev build-essential git wget curl \
+          python3 python3-pip ca-certificates unzip
 
-    - name: Clone Toolchain (Neutron Clang)
+    - name: Clone Clang Toolchain (Neutron Clang)
       run: |
         git clone --depth=1 https://github.com/Neutron-Toolchains/clang.git clang
         echo "CLANG_PATH=$(pwd)/clang/bin" >> $GITHUB_ENV
 
-    - name: Clone KernelSU Next and Integrate
+    - name: Add KernelSU Next
       run: |
-        git clone --depth=1 https://github.com/KernelSU-Next/KernelSU-Next.git KernelSU-Next
-        bash KernelSU-Next/kernel/setup.sh
+        git clone --depth=1 https://github.com/KernelSU-Next/KernelSU-Next.git KernelSU
+        bash KernelSU/kernel/setup.sh
 
-    - name: Compile Kernel
+    - name: Setup Build Variables
       run: |
         export ARCH=arm64
         export SUBARCH=arm64
-        export KBUILD_BUILD_USER=adrenaline
-        export KBUILD_BUILD_HOST=github
+        export KBUILD_BUILD_USER=shivam
+        export KBUILD_BUILD_HOST=github-actions
         export PATH=$CLANG_PATH:$PATH
+        echo "Using Neutron Clang and KernelSU Next"
+
+    - name: Start Kernel Compilation
+      run: |
         make O=out lancelot_defconfig
+        # Enable KSU config forcibly
+        echo "CONFIG_KSU=y" >> out/.config
         make -j$(nproc) O=out \
           CC=clang \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi-
 
-    - name: Package Kernel with AnyKernel3
+    - name: Clone AnyKernel3
       run: |
         git clone --depth=1 https://github.com/osm0sis/AnyKernel3.git AnyKernel3
         cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3/
-        cd AnyKernel3
-        zip -r9 ../Lancelot-KSU-Next-Kernel.zip *
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+    - name: Create Flashable ZIP
+      run: |
+        cd AnyKernel3
+        zip -r9 ../Lancelot-Kernel-KSU-Next.zip *
+
+    - name: Upload Final Flashable ZIP
+      uses: actions/upload-artifact@v3.1.3
       with:
-        name: Lancelot-KSU-Next-Kernel
-        path: Lancelot-KSU-Next-Kernel.zip
+        name: Lancelot-Kernel-KSU-Next
+        path: Lancelot-Kernel-KSU-Next.zip
