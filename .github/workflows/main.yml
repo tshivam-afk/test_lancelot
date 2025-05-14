@@ -18,9 +18,9 @@ jobs:
           libelf-dev build-essential git wget curl \
           python3 python3-pip ca-certificates unzip
 
-    - name: Clone Clang Toolchain (Neutron Clang)
+    - name: Clone ZyCromerZ Clang (Latest)
       run: |
-        git clone --depth=1 https://github.com/Neutron-Toolchains/clang.git clang
+        git clone --depth=1 https://github.com/ZyCromerZ/Clang.git clang
         echo "CLANG_PATH=$(pwd)/clang/bin" >> $GITHUB_ENV
 
     - name: Add KernelSU Next
@@ -35,7 +35,7 @@ jobs:
         export KBUILD_BUILD_USER=adrenaline
         export KBUILD_BUILD_HOST=github-actions
         export PATH=$CLANG_PATH:$PATH
-        echo "Using Neutron Clang and KernelSU Next"
+        echo "Patching KernelSU Next"
 
     - name: Start Kernel Compilation
       run: |
